@@ -1,20 +1,16 @@
 // app/routes/result.$entryId.tsx
-import type { LoaderFunctionArgs } from "react-router";
-import { useLoaderData } from "react-router-dom";
-import { useState } from "react";
+import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
+import { useLoaderData, useActionData } from "react-router-dom";
 import { prisma } from "../db.server";
 import { jobCategories } from "../jobCategories";
 import { salaryBandsV1, findBandForIncome } from "../salaryBands";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from "recharts";
 import { CURRENT_SCORE_VERSION } from "../config/salaryIndexVersion";
+
+import { ResultScoreSection } from "../components/result/ResultScoreSection";
+import { ResultSummaryCard } from "../components/result/ResultSummaryCard";
+import { ResultHistogramSection } from "../components/result/ResultHistogramSection";
+import { ResultShareSection } from "../components/result/ResultShareSection";
+import { ResultSurveySection } from "../components/result/ResultSurveySection";
 
 // ▼ ヒストグラム表示用
 type HistogramBin = {
@@ -31,7 +27,7 @@ type SnapshotHistogramItem = {
   count: number;
 };
 
-type ResultLoaderData = {
+export type ResultLoaderData = {
   entryId: string;
   age: number;
   jobCategoryCode: string;
@@ -41,6 +37,12 @@ type ResultLoaderData = {
   histogram: HistogramBin[];
   isOwner: boolean;
   nickname: string | null;
+  canAnswerBaseSurvey: boolean;       // 満足度アンケートを出して良いか
+  isHighIncomeCandidate: boolean;     // 高年収理由Q2を出す対象か
+};
+
+export type ActionData = {
+  ok?: boolean;
 };
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
@@ -49,11 +51,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     throw new Response("Not found", { status: 404 });
   }
 
-  // ▼ エントリ + スナップショットを取得
+  // ▼ エントリ + スナップショット + アンケートを取得
   const entry = await prisma.salaryEntry.findUnique({
     where: { id: entryId },
     include: {
       SnapshotResult: true,
+      SurveyResponse: true,
+      HighIncomeReason: true,
     },
   });
 
@@ -101,12 +105,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     let percentile = 50;
 
     if (sampleSize > 0) {
-      const mean =
-        incomes.reduce((sum, v) => sum + v, 0) / sampleSize;
+      const mean = incomes.reduce((sum, v) => sum + v, 0) / sampleSize;
 
       const variance =
-        incomes.reduce((sum, v) => sum + (v - mean) ** 2, 0) /
-        sampleSize;
+        incomes.reduce((sum, v) => sum + (v - mean) ** 2, 0) / sampleSize;
 
       const stdDev = Math.sqrt(variance || 1);
 
@@ -118,20 +120,16 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       if (score > 100) score = 100;
 
       // 単純パーセンタイル（自分以下の割合）
-      const belowOrEqual = incomes.filter(
-        (v) => v <= entry.annualIncome
-      ).length;
+      const belowOrEqual = incomes.filter((v) => v <= entry.annualIncome).length;
       percentile = (belowOrEqual / sampleSize) * 100;
     }
 
     // 分布スナップショット
-    const histogramForSnapshot: SnapshotHistogramItem[] =
-      salaryBandsV1.map((band) => {
+    const histogramForSnapshot: SnapshotHistogramItem[] = salaryBandsV1.map(
+      (band) => {
         const count = cohort.filter((c) => {
           const incomeInMan = c.annualIncome / 10_000; // 万円
-          return (
-            incomeInMan >= band.min && incomeInMan <= band.max
-          );
+          return incomeInMan >= band.min && incomeInMan <= band.max;
         }).length;
 
         return {
@@ -139,7 +137,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           label: band.display,
           count,
         };
-      });
+      }
+    );
 
     snapshot = await prisma.snapshotResult.create({
       data: {
@@ -166,8 +165,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }));
 
   // スコア表示はサンプル数がある程度たまってから
-  const displayScore =
-    snapshot.sampleSize >= 5 ? snapshot.score : null;
+  const displayScore = snapshot.sampleSize >= 5 ? snapshot.score : null;
+
+  // アンケ表示ロジック
+  const hasBaseSurvey = !!entry.SurveyResponse;
+  const rawScore = snapshot.score; // サンプル不足でも数値は入っている前提
+  const isHighIncomeCandidate = rawScore != null && rawScore >= 55; // 閾値はお好みで
+
+  const canAnswerBaseSurvey = isOwner && !hasBaseSurvey;
 
   return Response.json({
     entryId,
@@ -178,8 +183,108 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     sampleSize: snapshot.sampleSize,
     histogram,
     isOwner,
-    nickname: entry.nickname, 
+    nickname: entry.nickname,
+    canAnswerBaseSurvey,
+    isHighIncomeCandidate,
   } satisfies ResultLoaderData);
+}
+
+// ==========================
+// action（満足度＋高年収理由アンケを1フォームで保存）
+// ==========================
+export async function action({ params, request }: ActionFunctionArgs) {
+  const entryId = params.entryId;
+  if (!entryId) {
+    return new Response("Not found", { status: 404 });
+  }
+
+  const entry = await prisma.salaryEntry.findUnique({
+    where: { id: entryId },
+    include: {
+      SnapshotResult: true,
+      SurveyResponse: true,
+      HighIncomeReason: true,
+    },
+  });
+
+  if (!entry) {
+    return new Response("Not found", { status: 404 });
+  }
+
+  // 本人チェック（loader と同じロジック）
+  const cookieHeader = request.headers.get("Cookie") ?? "";
+  const sid = cookieHeader
+    .split(";")
+    .map((v) => v.trim())
+    .find((v) => v.startsWith("sid="))
+    ?.split("=")[1];
+
+  const isOwner = !!sid && sid === entry.clientId;
+  if (!isOwner) {
+    return new Response("Forbidden", { status: 403 });
+  }
+
+  // すでにベースアンケート回答済みなら何もしない
+  if (entry.SurveyResponse) {
+    return Response.json({ ok: false });
+  }
+
+  const formData = await request.formData();
+
+  // Q1: 年収満足度（全員）
+  const satisfaction = formData.get("satisfaction");
+  let isSatisfied: boolean | null = null;
+  if (satisfaction === "SATISFIED") {
+    isSatisfied = true;
+  } else if (satisfaction === "UNSATISFIED") {
+    isSatisfied = false;
+  }
+
+  // 一応バリデーション（ラジオに required 付けているので基本通る想定）
+  if (isSatisfied === null) {
+    return Response.json({ ok: false });
+  }
+
+  // SurveyResponse 作成（MVPなので create 固定）
+  await prisma.surveyResponse.create({
+    data: {
+      entryId,
+      isSatisfied, // ← Prisma側で Boolean カラムにしておく
+    },
+  });
+
+  // Q2: 高年収理由（高スコアの人にだけ有効）
+  const snapshot = entry.SnapshotResult;
+  const rawScore = snapshot?.score ?? null;
+  const isHighIncomeCandidate = rawScore != null && rawScore >= 55;
+
+  const reasonCodes = formData
+    .getAll("reasonCodes")
+    .map(String)
+    .filter((v) => v.trim().length > 0);
+
+  const freeTextRaw = formData.get("freeText");
+  const freeText =
+    typeof freeTextRaw === "string" && freeTextRaw.trim().length > 0
+      ? freeTextRaw.trim().slice(0, 1000)
+      : null;
+
+  if (
+    isHighIncomeCandidate &&
+    !entry.HighIncomeReason &&
+    (reasonCodes.length > 0 || freeText)
+  ) {
+    await prisma.highIncomeReasonResponse.create({
+      data: {
+        entryId,
+        reasonCodes,
+        freeText,
+      },
+    });
+  }
+
+  // リダイレクトせず、フラッシュ用の actionData だけ返す
+  return Response.json({ ok: true });
 }
 
 export function meta({ data }: Route.MetaArgs) {
@@ -194,8 +299,7 @@ export function meta({ data }: Route.MetaArgs) {
     d.jobCategoryCode;
 
   const userName = d.nickname ? `${d.nickname} さん` : "匿名ユーザー";
-  const scoreText =
-    d.score != null ? `偏差値 ${d.score}` : "年収スコア";
+  const scoreText = d.score != null ? `偏差値 ${d.score}` : "年収スコア";
 
   const title = `${userName}の${scoreText} | 年収偏差値チェッカー`;
 
@@ -218,14 +322,11 @@ export function meta({ data }: Route.MetaArgs) {
 }
 
 // ==========================
-// 画面コンポーネント
+// 画面コンポーネント（骨組み）
 // ==========================
 export default function ResultRoute() {
   const data = useLoaderData() as ResultLoaderData;
-  const displayName = data.nickname ? `${data.nickname} さん` : "";
-  const [copied, setCopied] = useState(false);
-
-  const incomeMan = Math.round(data.annualIncome / 10_000); // 万円表示
+  const actionData = useActionData() as ActionData | undefined;
 
   const bandSize = 5;
   const lowerAge = Math.floor(data.age / bandSize) * bandSize;
@@ -235,162 +336,30 @@ export default function ResultRoute() {
     jobCategories.find((j) => j.code === data.jobCategoryCode)?.label ??
     data.jobCategoryCode;
 
-  const scoreLabel =
-    data.score === null
-      ? "※データ少なめ（参考値なし）"
-      : data.score >= 60
-      ? "上位ゾーン"
-      : data.score >= 50
-      ? "だいたい平均ゾーン"
-      : "やや控えめゾーン";
-
-  // ▼ シェア用
-  const shareUrl =
-    typeof window !== "undefined" ? window.location.href : "";
-  const namePart = data.nickname ? `${data.nickname} さんの` : "";
-  const shareText =
-    data.score !== null
-      ? `${namePart}年収スコア${data.score}（${jobLabel} / ${data.age}歳）をSALARY INDEXでチェックしました。`
-      : `${namePart}年収ポジション（${jobLabel} / ${data.age}歳）をSALARY INDEXでチェックしました。`;
-
-  const xShareUrl =
-    "https://twitter.com/intent/tweet?" +
-    new URLSearchParams({
-      text: shareText,
-      url: shareUrl || "https://salary-index.example", // 本番ドメインに差し替え
-    }).toString();
-
-  const handleCopy = async () => {
-    try {
-      if (!shareUrl) return;
-      await navigator.clipboard.writeText(shareUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  const incomeMan = Math.round(data.annualIncome / 10_000); // 万円表示
 
   return (
     <main className="max-w-3xl mx-auto px-4 py-10 space-y-10">
-      {/* スコアどーん */}
-      <section className="text-center space-y-4">
-        <p className="text-sm text-base-content/70">あなたの年収スコア</p>
-        {displayName && (
-          <p className="text-sm text-base-content/70 mt-1">
-            <span className="font-semibold">{displayName}</span>の結果
-          </p>
-        )}
-        {data.score !== null ? (
-          <>
-            <div className="flex justify-center items-baseline gap-2">
-              <span className="text-6xl font-extrabold text-primary">
-                {data.score}
-              </span>
-              <span className="text-sm text-base-content/60">
-                偏差値
-              </span>
-            </div>
-            <p className="text-sm text-base-content/70">
-              同職種 × 近い年代の中で{" "}
-              <span className="font-semibold">{scoreLabel}</span>
-              に位置しています。
-            </p>
-          </>
-        ) : (
-          <p className="mt-4 text-sm text-warning">
-            まだ十分なデータがないため、スコアは表示していません。
-          </p>
-        )}
+      <ResultScoreSection
+        data={data}
+        jobLabel={jobLabel}
+        lowerAge={lowerAge}
+        upperAge={upperAge}
+      />
 
-        <p className="mt-2 text-xs text-base-content/60">
-          {lowerAge}〜{upperAge} 歳 × {jobLabel}
-        </p>
-      </section>
+      <ResultSummaryCard
+        data={data}
+        jobLabel={jobLabel}
+        lowerAge={lowerAge}
+        upperAge={upperAge}
+        incomeMan={incomeMan}
+      />
 
-      {/* 集計条件カード */}
-      <section className="card bg-base-100 shadow">
-        <div className="card-body space-y-3 text-sm">
-          <h2 className="card-title text-base">今回の集計条件</h2>
-          <div>
-            <div>
-              年齢：{data.age}歳（{lowerAge}〜{upperAge}歳レンジ）
-            </div>
-            <div>職種：{jobLabel}</div>
-          </div>
+      <ResultHistogramSection histogram={data.histogram} sampleSize={data.sampleSize} />
 
-          <div className="mt-4 space-y-1">
-            <div>
-              あなたの年収：
-              <span className="font-semibold">{incomeMan} 万円</span>
-            </div>
-          </div>
+      <ResultShareSection data={data} jobLabel={jobLabel} />
 
-          <p className="mt-4 text-xs text-base-content/60">
-            スコアは SALARY INDEX 内のデータだけをもとにした簡易的な指標です。
-            母数が少ない場合、数値は大きくぶれます。
-          </p>
-        </div>
-      </section>
-
-      {/* ヒストグラム */}
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold">
-          年収分布（あなたの位置）
-        </h2>
-        <div className="w-full h-64 bg-base-100 rounded-2xl border p-3">
-          {data.sampleSize > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.histogram}>
-                <XAxis
-                  dataKey="label"
-                  interval={0}
-                  tick={{ fontSize: 10 }}
-                />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="count">
-                  {data.histogram.map((bin, index) => (
-                    <Cell
-                      key={index}
-                      fill={bin.isUserBand ? "#3b82f6" : "#9ca3af"}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <p className="text-sm text-base-content/70">
-              まだデータが少ないため、分布グラフは表示できません。
-            </p>
-          )}
-        </div>
-      </section>
-
-      {/* 結果シェア */}
-      <section className="pt-4 border-t space-y-3">
-        <h2 className="text-sm font-semibold">結果をシェア</h2>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <a
-            href={xShareUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="btn btn-sm btn-primary flex-1"
-          >
-            X で結果をシェアする
-          </a>
-          <button
-            type="button"
-            onClick={handleCopy}
-            className="btn btn-sm btn-outline flex-1"
-          >
-            {copied ? "URLをコピーしました" : "結果ページのURLをコピー"}
-          </button>
-        </div>
-        <p className="text-xs text-base-content/60">
-          個人が特定される情報は保存していません。年齢・職種・年収レンジのみをもとにした結果です。
-        </p>
-      </section>
+      <ResultSurveySection data={data} actionOk={!!actionData?.ok} />
     </main>
   );
 }

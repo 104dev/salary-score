@@ -10,26 +10,42 @@ model SalaryEntry {
   id               String   @id @default(cuid())
   createdAt        DateTime @default(now())
 
+  // Cookie / localStorage と紐づくクライアントID（匿名）
   clientId         String?
   nickname         String?
 
   age              Int
+
+  // 大分類（営業/ITエンジニア/…）
   jobCategoryCode  String
+
+  // サブカテゴリ（コード値）
   jobSubCategory   String?
+
+  // サブカテゴリ自由入力（Other選択時のみ）
+  jobSubCategoryOther String?
+
+  // 年収
   annualIncome     Int
+
+  // 業界分類（後で補正に使う）
   industryCode     String?
 
-  // 質問シート側の世代管理（v1, v2...）
+  // 質問フォームの世代（v1,v2…）
   surveyVersion    Int      @default(1)
 
-  // アンケート回答（満足度など） 1:1
+  // 入力時アンケート
   SurveyResponse   SurveyResponse?
 
-  // 結果スナップショット（スコア＆ヒストグラム） 1:1
+  // 結果スナップショット
   SnapshotResult   SnapshotResult?
+
+  // 高年収理由（結果画面用）
+  HighIncomeReason HighIncomeReasonResponse?
 
   @@index([jobCategoryCode, age])
   @@index([jobCategoryCode, jobSubCategory])
+  @@index([industryCode, jobCategoryCode])
 }
 
 model SurveyResponse {
@@ -37,9 +53,9 @@ model SurveyResponse {
   entryId      String   @unique
   createdAt    DateTime @default(now())
 
-  satisfaction Int?
   selfAvgGuess Int?
   extraAnswers Json?
+　isSatisfied  Boolean?
 
   SalaryEntry  SalaryEntry @relation(fields: [entryId], references: [id])
 }
@@ -49,18 +65,25 @@ model SnapshotResult {
   entryId      String      @unique
   createdAt    DateTime    @default(now())
 
-  // 対象のエントリ（1:1）
   SalaryEntry  SalaryEntry @relation(fields: [entryId], references: [id])
 
-  // スコア関連
-  score        Int         // 0〜100 の SALARY INDEX スコア
-  zScore       Float       // Z値
-  percentile   Float       // 0〜100
-  sampleSize   Int         // 母数（何件から算出したか）
-
-  // 当時の分布スナップショット
+  score        Int
+  zScore       Float
+  percentile   Float
+  sampleSize   Int
   histogram    Json
-
-  // スコア算出ロジックの世代（v1, v2...）
   scoreVersion Int         @default(1)
+}
+
+model HighIncomeReasonResponse {
+  id           String   @id @default(cuid())
+  entryId      String   @unique
+  createdAt    DateTime @default(now())
+
+  // 例: ["SKILL", "MANAGEMENT", "HIGH_COMP_RANGE"]
+  reasonCodes   String[]
+
+  freeText      String?
+
+  SalaryEntry   SalaryEntry @relation(fields: [entryId], references: [id])
 }
