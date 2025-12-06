@@ -31,6 +31,8 @@ model SalaryEntry {
   // 業界分類（後で補正に使う）
   industryCode     String?
 
+  genderCode       String? 
+
   // 質問フォームの世代（v1,v2…）
   surveyVersion    Int      @default(1)
 

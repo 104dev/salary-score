@@ -1,24 +1,50 @@
 import { useState } from "react";
 import { Form, useNavigation } from "react-router-dom";
-import { jobCategories, type JobCategoryCode } from "../jobCategories";
+import {
+  jobCategories,
+  jobSubCategories,
+  type JobCategoryCode,
+} from "../jobCategories";
 import { salaryBandsV1 } from "../salaryBands";
+import { genderOptions } from "../gender";
 import { prisma } from "../db.server";
 
-// React Router の Action（型はざっくりでOK）
+// React Router の Action
 export async function action({ request }: { request: Request }) {
   const formData = await request.formData();
 
+  // ニックネーム
   const rawNickname = (formData.get("nickname") as string | null) ?? "";
   let nickname: string | null = null;
   if (rawNickname.trim() !== "") {
     const trimmed = rawNickname.trim();
-    // サニタイズ：最大16文字に切り捨て（念のため）
-    nickname = trimmed.slice(0, 16);
+    nickname = trimmed.slice(0, 16); // 最大16文字
   }
+
   const age = Number(formData.get("age"));
   const jobCategoryCode = String(formData.get("jobCategoryCode") || "");
-  const rawJobSubCategory = (formData.get("jobSubCategory") as string) || "";
-  const jobSubCategory = rawJobSubCategory === "" ? null : rawJobSubCategory;
+
+  // ▼ サブカテゴリ（プリセット or その他自由記述）
+  const rawJobSubCategory =
+    ((formData.get("jobSubCategory") as string | null) ?? "").trim();
+  const rawJobSubCategoryOther =
+    ((formData.get("jobSubCategoryOther") as string | null) ?? "").trim();
+
+  let jobSubCategory: string | null = null;
+
+  if (rawJobSubCategory === "OTHER") {
+    if (rawJobSubCategoryOther !== "") {
+      jobSubCategory = rawJobSubCategoryOther.slice(0, 50);
+    } else {
+      jobSubCategory = null;
+    }
+  } else if (rawJobSubCategory !== "") {
+    jobSubCategory = rawJobSubCategory.slice(0, 50);
+  }
+
+  // ▼ 性別（任意・統計用）
+  const rawGender = (formData.get("genderCode") as string | null) ?? "NO_ANSWER";
+  const genderCode = rawGender === "" ? "NO_ANSWER" : rawGender;
 
   const salaryBandCode = Number(formData.get("salaryBandCode"));
 
@@ -50,6 +76,7 @@ export async function action({ request }: { request: Request }) {
       jobSubCategory,
       annualIncome,
       clientId,
+      genderCode,
       // industryCode は今は null, surveyVersion は default(1)
     },
   });
@@ -59,7 +86,6 @@ export async function action({ request }: { request: Request }) {
   if (!clientIdFromCookie) {
     headers.append(
       "Set-Cookie",
-      // 本番では Secure, Max-Age なども付けると良い
       `sid=${clientId}; Path=/; HttpOnly; SameSite=Lax`
     );
   }
@@ -72,30 +98,41 @@ export default function HomeRoute() {
   const [selectedJob, setSelectedJob] = useState<JobCategoryCode | null>(null);
   const [age, setAge] = useState<number | "">("");
   const [salaryBandCode, setSalaryBandCode] = useState<number | "">("");
-  const [specialistSub, setSpecialistSub] = useState<string>("");
+  const [jobSubCategory, setJobSubCategory] = useState<string>("");
+  const [jobSubCategoryOther, setJobSubCategoryOther] = useState<string>("");
   const [nickname, setNickname] = useState<string>("");
+  const [gender, setGender] = useState<string>("NO_ANSWER"); // デフォルト「回答しない」
 
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
 
-  const isSpecialist = selectedJob === "SPECIALIST";
+  // ▼ サブカテゴリ候補（必ず配列になるように二重ガード）
+  const subOptions =
+    selectedJob && jobSubCategories
+      ? jobSubCategories[selectedJob] ?? []
+      : [];
+
+  const hasSub = !!(selectedJob && Array.isArray(subOptions) && subOptions.length > 0);
+  const requiresSubOther = hasSub && jobSubCategory === "OTHER";
 
   return (
     <>
       {/* HERO */}
-        <section className="pt-16 sm:pt-24 pb-14 text-center max-w-3xl mx-auto">
+      <section className="pt-16 sm:pt-24 pb-14 text-center max-w-3xl mx-auto">
         <h1 className="text-3xl sm:text-5xl font-extrabold leading-tight tracking-tight">
-            年収<span className="text-primary">偏差値チェッカー</span>
+          年収<span className="text-primary">偏差値チェッカー</span>
         </h1>
 
         <p className="mt-6 text-base-content/80 text-sm sm:text-base leading-relaxed">
-            <strong>SALARY SCORE</strong> は、市場データをもとに
-            <strong>あなたの年収ポジション</strong> を偏差値形式で見える化するサービスです。<br />
-            転職市場では、企業やエージェントに情報が偏り、求職者自身が市場価値を把握しづらくなっています。<br />
-            オファーの妥当性を判断するための
-            <strong>客観的な「基準」</strong> を提供します。
+          <strong>SALARY SCORE</strong> は、市場データをもとに
+          <strong>あなたの年収ポジション</strong> を偏差値形式で見える化するサービスです。
+          <br />
+          転職市場では、企業やエージェントに情報が偏り、求職者自身が市場価値を把握しづらくなっています。
+          <br />
+          オファーの妥当性を判断するための
+          <strong>客観的な「基準」</strong> を提供します。
         </p>
-        </section>
+      </section>
 
       {/* FORM */}
       <Form method="post" className="mx-auto max-w-xl space-y-8">
@@ -119,15 +156,43 @@ export default function HomeRoute() {
           />
         </div>
 
+        {/* 性別（任意・統計用） */}
+        <div className="form-control">
+          <label className="label">
+            <span className="label-text font-medium">性別（任意）</span>
+            <span className="label-text-alt text-xs text-base-content/60">
+              偏差値の計算には利用せず、統計的な分析のみに使用します。
+            </span>
+          </label>
+          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2">
+            {genderOptions.map((g) => (
+              <label
+                key={g.code}
+                className="label cursor-pointer gap-2 justify-start"
+              >
+                <input
+                  type="radio"
+                  name="genderCode"
+                  value={g.code}
+                  className="radio radio-sm"
+                  checked={gender === g.code}
+                  onChange={() => setGender(g.code)}
+                />
+                <span className="label-text">{g.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
         {/* ニックネーム（任意） */}
         <div className="form-control">
-        <label className="label">
+          <label className="label">
             <span className="label-text font-medium">ニックネーム（任意）</span>
             <span className="label-text-alt text-xs text-base-content/60">
-            本名や個人が特定できる名前は入力しないでください
+              本名や個人が特定できる名前は入力しないでください
             </span>
-        </label>
-        <input
+          </label>
+          <input
             type="text"
             name="nickname"
             value={nickname}
@@ -135,12 +200,12 @@ export default function HomeRoute() {
             maxLength={16}
             placeholder="例：太郎 / 花子"
             className="input input-bordered w-full"
-        />
-        <label className="label">
+          />
+          <label className="label">
             <span className="label-text-alt text-xs text-base-content/50">
-            ※ 最大16文字。シェア画面に表示されます。
+              ※ 最大16文字。シェア画面に表示されます。
             </span>
-        </label>
+          </label>
         </div>
 
         {/* 職種 */}
@@ -163,13 +228,15 @@ export default function HomeRoute() {
                 <button
                   key={code}
                   type="button"
-                  onClick={() => setSelectedJob(code)}
+                  onClick={() => {
+                    setSelectedJob(code);
+                    setJobSubCategory("");
+                    setJobSubCategoryOther("");
+                  }}
                   className={`btn h-auto min-h-[3.5rem] whitespace-normal text-sm border transition-colors ${
                     isActive
-                      ? // 選択時：はっきりした色＋白文字
-                        "btn-primary text-primary-content border-primary"
-                      : // 非選択時：白背景＋濃い文字＋薄めの枠線（ライトでもハッキリ見える）
-                        "btn-ghost bg-base-100 text-base-content border-base-300 hover:border-base-400 hover:bg-base-100"
+                      ? "btn-primary text-primary-content border-primary"
+                      : "btn-ghost bg-base-100 text-base-content border-base-300 hover:border-base-400 hover:bg-base-100"
                   }`}
                 >
                   <span className="text-xl">{emoji}</span>
@@ -180,28 +247,47 @@ export default function HomeRoute() {
           </div>
         </div>
 
-        {/* 専門職サブカテゴリ（SPECIALIST のときだけ表示） */}
-        {isSpecialist && (
+        {/* サブカテゴリ（対応がある職種だけ表示） */}
+        {hasSub && (
           <div className="form-control">
             <label className="label">
-              <span className="label-text font-medium">専門職の内訳</span>
+              <span className="label-text font-medium">職種の内訳</span>
               <span className="label-text-alt text-xs text-base-content/70">
-                一番近いものを選んでください
+                一番近いものを選んでください（その他を選ぶと自由入力できます）
               </span>
             </label>
             <select
               name="jobSubCategory"
               className="select select-bordered w-full"
-              value={specialistSub}
-              onChange={(e) => setSpecialistSub(e.target.value)}
+              value={jobSubCategory}
+              onChange={(e) => setJobSubCategory(e.target.value)}
               required
             >
               <option value="">選択してください</option>
-              <option value="HEALTH_MED">医療・看護・介護</option>
-              <option value="LICENSED_PRO">士業（弁護士・税理士など）</option>
-              <option value="EDUCATION">教育・研究</option>
-              <option value="CREATIVE">クリエイティブ</option>
+              {subOptions.map((sub) => (
+                <option key={sub.code} value={sub.code}>
+                  {sub.label}
+                </option>
+              ))}
             </select>
+
+            {jobSubCategory === "OTHER" && (
+              <div className="mt-3">
+                <input
+                  type="text"
+                  name="jobSubCategoryOther"
+                  className="input input-bordered w-full text-sm"
+                  value={jobSubCategoryOther}
+                  onChange={(e) => setJobSubCategoryOther(e.target.value)}
+                  placeholder="例：心理カウンセラー / コンサルタント など"
+                />
+                <label className="label">
+                  <span className="label-text-alt text-xs text-base-content/50">
+                    ※ 50文字以内でご記入ください。
+                  </span>
+                </label>
+              </div>
+            )}
           </div>
         )}
 
@@ -239,7 +325,10 @@ export default function HomeRoute() {
               !age ||
               !selectedJob ||
               !salaryBandCode ||
-              (isSpecialist && !specialistSub) ||
+              (hasSub &&
+                (!jobSubCategory ||
+                  (requiresSubOther &&
+                    jobSubCategoryOther.trim() === ""))) ||
               isSubmitting
             }
           >
