@@ -11,6 +11,7 @@ import { ResultSummaryCard } from "../components/result/ResultSummaryCard";
 import { ResultHistogramSection } from "../components/result/ResultHistogramSection";
 import { ResultShareSection } from "../components/result/ResultShareSection";
 import { ResultSurveySection } from "../components/result/ResultSurveySection";
+import { verifyShareToken } from "../utils/shareToken.server";
 
 // ▼ ヒストグラム表示用
 type HistogramBin = {
@@ -51,6 +52,18 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     throw new Response("Not found", { status: 404 });
   }
 
+  // ▼ URLクエリからトークン取得
+  const url = new URL(request.url);
+  const rawToken = url.searchParams.get("d"); // ?d=xxxxx
+
+  let nicknameFromToken: string | null = null;
+  if (rawToken) {
+    const payload = verifyShareToken(rawToken);
+    if (payload && payload.entryId === entryId) {
+      nicknameFromToken = payload.nickname;
+    }
+  }
+
   // ▼ エントリ + スナップショット + アンケートを取得
   const entry = await prisma.salaryEntry.findUnique({
     where: { id: entryId },
@@ -64,6 +77,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   if (!entry) {
     throw new Response("Not found", { status: 404 });
   }
+
 
   // Cookie から sid を取得して、本人判定
   const cookieHeader = request.headers.get("Cookie") ?? "";
@@ -183,7 +197,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     sampleSize: snapshot.sampleSize,
     histogram,
     isOwner,
-    nickname: entry.nickname,
+    nickname: nicknameFromToken,
     canAnswerBaseSurvey,
     isHighIncomeCandidate,
   } satisfies ResultLoaderData);

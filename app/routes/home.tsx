@@ -177,54 +177,30 @@ export default function HomeRoute() {
 
         {/* 性別（任意・統計用） */}
         <div className="form-control">
-          <label className="label">
+            <label className="label flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
             <span className="label-text font-medium">性別（任意）</span>
             <span className="label-text-alt text-xs text-base-content/60">
-              偏差値の計算には利用せず、統計的な分析のみに使用します。
+                偏差値の計算には利用せず、統計的な分析のみに使用します。
             </span>
-          </label>
-          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2">
-            {genderOptions.map((g) => (
-              <label
-                key={g.code}
-                className="label cursor-pointer gap-2 justify-start"
-              >
-                <input
-                  type="radio"
-                  name="genderCode"
-                  value={g.code}
-                  className="radio radio-sm"
-                  checked={gender === g.code}
-                  onChange={() => setGender(g.code)}
-                />
-                <span className="label-text">{g.label}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {/* ニックネーム（任意） */}
-        <div className="form-control">
-          <label className="label">
-            <span className="label-text font-medium">ニックネーム（任意）</span>
-            <span className="label-text-alt text-xs text-base-content/60">
-              本名や個人が特定できる名前は入力しないでください
-            </span>
-          </label>
-          <input
-            type="text"
-            name="nickname"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            maxLength={16}
-            placeholder="例：太郎 / 花子"
-            className="input input-bordered w-full"
-          />
-          <label className="label">
-            <span className="label-text-alt text-xs text-base-content/50">
-              ※ 最大16文字。シェア画面に表示されます。
-            </span>
-          </label>
+            </label>
+            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2">
+                {genderOptions.map((g) => (
+                <label
+                    key={g.code}
+                    className="label cursor-pointer gap-2 justify-start"
+                >
+                    <input
+                    type="radio"
+                    name="genderCode"
+                    value={g.code}
+                    className="radio radio-sm"
+                    checked={gender === g.code}
+                    onChange={() => setGender(g.code)}
+                    />
+                    <span className="label-text">{g.label}</span>
+                </label>
+                ))}
+            </div>
         </div>
 
         {/* 職種 */}

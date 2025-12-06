@@ -6,4 +6,5 @@ export default [
   route("result/:entryId", "routes/result.$entryId.tsx"),
   route("terms", "routes/terms.tsx"),
   route("privacy-policy", "routes/privacy-policy.tsx"),
+  route("share-result", "routes/share-result.tsx"),
 ] satisfies RouteConfig;
