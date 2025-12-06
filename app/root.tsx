@@ -1,6 +1,7 @@
 // app/root.tsx
 import {
   isRouteErrorResponse,
+  Link,
   Links,
   Meta,
   Outlet,
@@ -24,40 +25,26 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
-// 共通 meta / OGP（必要ならあとで上書きも可）
-export function meta(_: Route.MetaArgs) {
+export function meta() {
+  const title = "年収偏差値チェッカー | SALARY SCORE";
+  const description =
+    "年齢・職種・年収から、あなたの市場ポジションを偏差値スコアで可視化する年収診断ツールです。";
+
+  const url = "https://salary-score.com";
+  const ogImage = "https://salary-score.com/ogp-default.png";
+
   return [
-    {
-      title: "SALARY INDEX | 匿名で年収の立ち位置がわかる",
-    },
-    {
-      name: "description",
-      content:
-        "年齢・職種・年収を入れるだけで、市場の中で自分のポジションをスコアで確認できます。",
-    },
-    {
-      property: "og:title",
-      content: "SALARY INDEX | 匿名で年収の立ち位置がわかる",
-    },
-    {
-      property: "og:description",
-      content:
-        "年齢・職種・年収を入れるだけで、市場の中で自分のポジションをスコアで確認できます。",
-    },
-    {
-      property: "og:image",
-      content: "https://your-domain.example/ogp-default.png",
-    },
-    {
-      property: "og:type",
-      content: "website",
-    },
-    {
-      property: "og:url",
-      content: "https://your-domain.example/",
-    },
+    { title },
+    { name: "description", content: description },
+    { property: "og:title", content: title },
+    { property: "og:description", content: description },
+    { property: "og:image", content: ogImage },
+    { property: "og:type", content: "website" },
+    { property: "og:url", content: url },
   ];
 }
+
+const GTM_ID = "GTM-W9FG4KSZ";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const currentYear = new Date().getFullYear();
@@ -72,30 +59,48 @@ export function Layout({ children }: { children: React.ReactNode }) {
         />
         <Meta />
         <Links />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+              'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+              })(window,document,'script','dataLayer','${GTM_ID}');
+            `,
+          }}
+        />
       </head>
       <body>
+        {/* GTM noscript */}
+        <noscript
+          dangerouslySetInnerHTML={{
+            __html: `<iframe src="https://www.googletagmanager.com/ns.html?id=${GTM_ID}"
+              height="0" width="0" style="display:none;visibility:hidden"></iframe>`,
+          }}
+        />
         <div className="min-h-screen flex flex-col bg-base-200 text-base-content">
           {/* Header */}
           <header className="navbar bg-base-100 shadow-sm">
             <div className="container mx-auto px-4 flex justify-between items-center">
-              <div className="flex items-center gap-2">
+                <Link to="/" className="flex items-center gap-2 no-underline">
                 <span className="text-2xl font-extrabold tracking-tight">
-                  SALARY<span className="text-primary">INDEX</span>
+                    SALARY<span className="text-primary">SCORE</span>
                 </span>
                 <span className="text-xs sm:text-sm text-base-content/60">
-                  あなたの年収ポジションを偏差値で見る
+                    あなたの年収ポジションを偏差値で見る
                 </span>
-              </div>
-              <nav className="flex items-center gap-4 text-sm text-base-content/70">
-                <a
-                  href="https://x.com"
-                  className="link link-hover"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  X でシェア
-                </a>
-              </nav>
+                </Link>
+                <nav className="flex items-center gap-4 text-sm text-base-content/70">
+                    <a
+                    href="https://x.com"
+                    className="link link-hover"
+                    target="_blank"
+                    rel="noreferrer"
+                    >
+                    X でシェア
+                    </a>
+                </nav>
             </div>
           </header>
 
@@ -105,12 +110,29 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </main>
 
           {/* Footer */}
-          <footer className="mt-12 border-t border-base-300 bg-base-100">
-            <div className="container mx-auto px-4 py-6 text-xs sm:text-sm text-base-content/60 flex flex-col sm:flex-row gap-2 justify-between">
-              <span>© {currentYear} SALARY INDEX</span>
-              <span>これは個人による年収リサーチプロトタイプです。</span>
+            <footer className="mt-12 border-t border-base-300 bg-base-100">
+            <div className="container mx-auto px-4 py-6 text-xs sm:text-sm text-base-content/60 flex flex-col sm:flex-row gap-3 justify-between">
+                <span>© {currentYear} SALARY SCORE</span>
+
+                <nav className="flex items-center gap-4">
+                <a href="/terms" className="link link-hover">利用規約</a>
+                <a href="/privacy-policy" className="link link-hover">プライバシー</a>
+                <a
+                    href="https://twitter.com/intent/tweet"
+                    className="link link-hover"
+                    target="_blank"
+                    rel="noreferrer"
+                >
+                    X でシェア
+                </a>
+                </nav>
             </div>
-          </footer>
+
+            <div className="text-center pb-4 text-[11px] text-base-content/50">
+                本ツールは公開データに基づく<span className="font-semibold">統計的な参考値</span>を提供するものです。<br className="sm:hidden" />
+                内容の正確性や結果の保証を行うものではありません。
+            </div>
+            </footer>
         </div>
 
         <ScrollRestoration />

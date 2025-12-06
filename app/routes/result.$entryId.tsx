@@ -183,7 +183,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 export function meta({ data }: Route.MetaArgs) {
-  if (!data) return [{ title: "SALARY INDEX | 年収スコア" }];
+  if (!data) {
+    return [{ title: "年収偏差値チェッカー | SALARY SCORE" }];
+  }
 
   const d = data as ResultLoaderData;
 
@@ -191,24 +193,27 @@ export function meta({ data }: Route.MetaArgs) {
     jobCategories.find((j) => j.code === d.jobCategoryCode)?.label ??
     d.jobCategoryCode;
 
-  const titleName = d.nickname ? `${d.nickname} さんの年収スコア` : "あなたの年収スコア";
+  const userName = d.nickname ? `${d.nickname} さん` : "匿名ユーザー";
+  const scoreText =
+    d.score != null ? `偏差値 ${d.score}` : "年収スコア";
 
-  const title =
-    d.score != null
-      ? `SALARY INDEX | ${titleName} ${d.score}`
-      : `SALARY INDEX | ${titleName}`;
+  const title = `${userName}の${scoreText} | 年収偏差値チェッカー`;
 
-  const desc = `年齢 ${d.age} 歳 / ${jobLabel} / 年収約 ${Math.round(
-    d.annualIncome / 10_000
-  )} 万円のポジションをSALARY INDEXで可視化しました。`;
+  const incomeMan = Math.round(d.annualIncome / 10_000);
+
+  const description = `${d.age}歳・${jobLabel}／年収${incomeMan}万円の市場ポジションを年収偏差値として表示しました。SALARY SCORE による年収診断結果です。`;
+
+  const url = `https://salary-score.com/result/${d.entryId}`;
+  const ogImage = "https://salary-score.com/ogp-default.png";
 
   return [
     { title },
-    { name: "description", content: desc },
+    { name: "description", content: description },
     { property: "og:title", content: title },
-    { property: "og:description", content: desc },
-    // og:image はとりあえず共通画像でもOK。動的画像は次のステップで。
-    { property: "og:image", content: "https://your-domain.example/ogp-default.png" },
+    { property: "og:description", content: description },
+    { property: "og:image", content: ogImage },
+    { property: "og:type", content: "article" },
+    { property: "og:url", content: url },
   ];
 }
 
