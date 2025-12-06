@@ -83,19 +83,19 @@ export default function HomeRoute() {
   return (
     <>
       {/* HERO */}
-      <section className="pt-16 sm:pt-24 pb-14 text-center max-w-3xl mx-auto">
+        <section className="pt-16 sm:pt-24 pb-14 text-center max-w-3xl mx-auto">
         <h1 className="text-3xl sm:text-5xl font-extrabold leading-tight tracking-tight">
-          匿名で <span className="text-primary">年収の立ち位置</span> を知る。
+            年収<span className="text-primary">偏差値チェッカー</span>
         </h1>
 
         <p className="mt-6 text-base-content/80 text-sm sm:text-base leading-relaxed">
-          SALARY INDEX は、自分の年収が市場のなかでどの位置にあるのかを比較できるサービスです。<br />
-          現在の転職市場では、企業やエージェントに年収情報が偏っています。<br />
-          求職者自身が市場価値を把握し、提示されたオファーを受け入れるべきか、見送るべきかを判断するための
-          <strong>「基準」</strong>
-          が必要です。
+            <strong>SALARY SCORE</strong> は、市場データをもとに
+            <strong>あなたの年収ポジション</strong> を偏差値形式で見える化するサービスです。<br />
+            転職市場では、企業やエージェントに情報が偏り、求職者自身が市場価値を把握しづらくなっています。<br />
+            オファーの妥当性を判断するための
+            <strong>客観的な「基準」</strong> を提供します。
         </p>
-      </section>
+        </section>
 
       {/* FORM */}
       <Form method="post" className="mx-auto max-w-xl space-y-8">
