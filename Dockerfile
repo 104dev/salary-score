@@ -1,31 +1,68 @@
-FROM node:20-alpine AS development-dependencies-env
-COPY . /app
-WORKDIR /app
-RUN npm ci
+# syntax = docker/dockerfile:1
 
-FROM node:20-alpine AS production-dependencies-env
-COPY ./package.json package-lock.json /app/
-WORKDIR /app
-RUN npm ci --omit=dev
+# Node のバージョンはお好みで
+ARG NODE_VERSION=20.18.0
+FROM node:${NODE_VERSION}-slim AS base
 
-FROM node:20-alpine AS build-env
-COPY . /app/
-COPY --from=development-dependencies-env /app/node_modules /app/node_modules
+LABEL fly_launch_runtime="Remix/Prisma"
+
+# アプリは /app に置く
 WORKDIR /app
-RUN npx prisma generate
+
+# 本番環境フラグ
+ENV NODE_ENV="production"
+
+
+# =========================
+#  Build stage
+# =========================
+FROM base AS build
+
+# build 用に必要なパッケージ（node-gyp など）
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y \
+      build-essential \
+      node-gyp \
+      openssl \
+      pkg-config \
+      python-is-python3 && \
+    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+
+# 依存関係インストール（dev を含める）
+COPY package-lock.json package.json ./
+RUN npm ci --include=dev
+
+# ソース一式コピー（prisma ディレクトリも含まれる）
+COPY . .
+
+# ※ ここではもう prisma generate をしない
+# RUN npx prisma generate  ← 削除
+
+# アプリの build（react-router の build）
 RUN npm run build
 
-FROM node:20-alpine
+# （必要ならここで devDependencies を削ってもいいが、
+#   runtime で npx prisma が必要なら dev を残す方がラク）
+# RUN npm prune --omit=dev
+
+
+# =========================
+#  Final runtime stage
+# =========================
+FROM base
+
 WORKDIR /app
 
-# 依存とビルド成果物＋Prisma関連をコピー
-COPY ./package.json package-lock.json ./
-COPY --from=production-dependencies-env /app/node_modules ./node_modules
-COPY --from=build-env /app/build ./build
+# runtime で必要な最小限のパッケージ
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y openssl && \
+    rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
-COPY --from=build-env /app/prisma ./prisma
-COPY --from=build-env /app/prisma.config.ts ./prisma.config.ts
+# build 済みアプリを全部コピー
+COPY --from=build /app /app
 
-COPY --from=build-env /app/public ./public
+# 本番サーバの LISTEN ポート
+EXPOSE 3000
 
-CMD ["npm", "run", "start"]
+# ★ runtime で Prisma Client を生成してからアプリ起動
+CMD ["sh", "-c", "npx prisma generate && npm run start"]
