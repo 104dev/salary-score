@@ -1,7 +1,6 @@
 # syntax = docker/dockerfile:1
 
-# Node のバージョンはお好みで
-ARG NODE_VERSION=20.18.0
+ARG NODE_VERSION=24.11.1
 FROM node:${NODE_VERSION}-slim AS base
 
 LABEL fly_launch_runtime="Remix/Prisma"
