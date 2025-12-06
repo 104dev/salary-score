@@ -32,14 +32,25 @@ export async function action({ request }: { request: Request }) {
 
   let jobSubCategory: string | null = null;
 
-  if (rawJobSubCategory === "OTHER") {
+  if (jobCategoryCode === "OTHER") {
+    // 親カテゴリが「その他」の場合は自由入力だけを見る
     if (rawJobSubCategoryOther !== "") {
       jobSubCategory = rawJobSubCategoryOther.slice(0, 50);
     } else {
       jobSubCategory = null;
     }
-  } else if (rawJobSubCategory !== "") {
-    jobSubCategory = rawJobSubCategory.slice(0, 50);
+  } else {
+    // 通常カテゴリ（営業 / IT / バックオフィス 等）
+    if (rawJobSubCategory === "OTHER") {
+      // サブカテゴリ側にも OTHER がある設計を残しておく場合
+      if (rawJobSubCategoryOther !== "") {
+        jobSubCategory = rawJobSubCategoryOther.slice(0, 50);
+      } else {
+        jobSubCategory = null;
+      }
+    } else if (rawJobSubCategory !== "") {
+      jobSubCategory = rawJobSubCategory.slice(0, 50);
+    }
   }
 
   // ▼ 性別（任意・統計用）
@@ -106,14 +117,22 @@ export default function HomeRoute() {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
 
-  // ▼ サブカテゴリ候補（必ず配列になるように二重ガード）
+  const isOtherCategory = selectedJob === "OTHER";
+
+  // ▼ サブカテゴリ候補
   const subOptions =
     selectedJob && jobSubCategories
       ? jobSubCategories[selectedJob] ?? []
       : [];
 
-  const hasSub = !!(selectedJob && Array.isArray(subOptions) && subOptions.length > 0);
+  const hasSub =
+    !!selectedJob &&
+    !isOtherCategory && // OTHER カテゴリはサブカテゴリなし
+    Array.isArray(subOptions) &&
+    subOptions.length > 0;
+
   const requiresSubOther = hasSub && jobSubCategory === "OTHER";
+  const requiresOtherDetail = isOtherCategory; // その他カテゴリは自由入力必須にする
 
   return (
     <>
@@ -291,6 +310,31 @@ export default function HomeRoute() {
           </div>
         )}
 
+        {/* 親カテゴリが OTHER のときの自由入力（サブカテゴリは出さない） */}
+        {isOtherCategory && (
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text font-medium">職種の説明</span>
+              <span className="label-text-alt text-xs text-base-content/70">
+                どのカテゴリにも当てはまらない場合、簡単にご記入ください。
+              </span>
+            </label>
+            <input
+              type="text"
+              name="jobSubCategoryOther"
+              className="input input-bordered w-full text-sm"
+              value={jobSubCategoryOther}
+              onChange={(e) => setJobSubCategoryOther(e.target.value)}
+              placeholder="例：YouTuber／ナイトワーク／複業フリーランス など"
+            />
+            <label className="label">
+              <span className="label-text-alt text-xs text-base-content/50">
+                ※ 50文字以内。偏差値の計算にはまだ利用しませんが、統計的に参考にします。
+              </span>
+            </label>
+          </div>
+        )}
+
         {/* 年収レンジ */}
         <div className="form-control">
           <label className="label">
@@ -329,6 +373,8 @@ export default function HomeRoute() {
                 (!jobSubCategory ||
                   (requiresSubOther &&
                     jobSubCategoryOther.trim() === ""))) ||
+              (requiresOtherDetail &&
+                jobSubCategoryOther.trim() === "") ||
               isSubmitting
             }
           >

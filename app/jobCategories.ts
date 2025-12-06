@@ -11,6 +11,7 @@ export const jobCategories: JobCategory[] = [
   { code: "TECH_NON_IT",  label: "製造・非IT技術職",     emoji: "🔧" },
   { code: "SPECIALIST",   label: "専門職・医療・士業",   emoji: "🎨" },
   { code: "MANAGEMENT",   label: "経営・管理職",         emoji: "👔" },
+  { code: "OTHER",        label: "その他",           emoji: "❓" },
 ];
 
 export type JobCategoryCode = (typeof jobCategories)[number]["code"];
@@ -28,7 +29,6 @@ export const jobSubCategories: Record<JobCategoryCode, JobSubCategory[]> = {
     { code: "B2C_SALES",     label: "個人営業" },
     { code: "INSIDE_SALES",  label: "インサイドセールス" },
     { code: "FIELD_SALES",   label: "フィールドセールス" },
-    { code: "OTHER",         label: "その他（自由入力）" },
   ],
 
   // --- バックオフィス ---
@@ -39,7 +39,6 @@ export const jobSubCategories: Record<JobCategoryCode, JobSubCategory[]> = {
     { code: "LEGAL",            label: "法務" },
     { code: "INTERNAL_IT",      label: "情シス・社内SE" },
     { code: "CUSTOMER_SUPPORT", label: "カスタマーサポート" },
-    { code: "OTHER",            label: "その他（自由入力）" },
   ],
 
   // --- ITエンジニア ---
@@ -51,7 +50,6 @@ export const jobSubCategories: Record<JobCategoryCode, JobSubCategory[]> = {
     { code: "DATA",          label: "データエンジニア／ML" },
     { code: "PM",            label: "PM／PdM" },
     { code: "QA",            label: "QA／テスト" },
-    { code: "OTHER",         label: "その他（自由入力）" },
   ],
 
   // --- 製造・非IT技術職 ---
@@ -61,7 +59,6 @@ export const jobSubCategories: Record<JobCategoryCode, JobSubCategory[]> = {
     { code: "CHEM",          label: "化学・素材" },
     { code: "CIVIL",         label: "建設・土木" },
     { code: "PLANT",         label: "プラントエンジニア" },
-    { code: "OTHER",         label: "その他（自由入力）" },
   ],
 
   // --- 専門職・医療・士業 ---
@@ -76,13 +73,13 @@ export const jobSubCategories: Record<JobCategoryCode, JobSubCategory[]> = {
     { code: "LAWYER",           label: "弁護士" },
     { code: "TAX_ACCOUNTANT",   label: "税理士" },
     { code: "OTHER_LICENSED_PRO", label: "その他士業" },
-    { code: "OTHER",            label: "その他（自由入力）" },
   ],
 
   // --- 経営・管理職 ---
   MANAGEMENT: [
     // 今は細分化しない（必要になったらここに生やす）
   ],
+  OTHER: [],
 };
 
 export type JobSubCategoryCode =
