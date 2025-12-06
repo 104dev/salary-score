@@ -1,14 +1,66 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
-}
-
 datasource db {
   provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model SalaryEntry {
+  id               String   @id @default(cuid())
+  createdAt        DateTime @default(now())
+
+  clientId         String?
+  nickname         String?
+
+  age              Int
+  jobCategoryCode  String
+  jobSubCategory   String?
+  annualIncome     Int
+  industryCode     String?
+
+  // 質問シート側の世代管理（v1, v2...）
+  surveyVersion    Int      @default(1)
+
+  // アンケート回答（満足度など） 1:1
+  SurveyResponse   SurveyResponse?
+
+  // 結果スナップショット（スコア＆ヒストグラム） 1:1
+  SnapshotResult   SnapshotResult?
+
+  @@index([jobCategoryCode, age])
+  @@index([jobCategoryCode, jobSubCategory])
+}
+
+model SurveyResponse {
+  id           String   @id @default(cuid())
+  entryId      String   @unique
+  createdAt    DateTime @default(now())
+
+  satisfaction Int?
+  selfAvgGuess Int?
+  extraAnswers Json?
+
+  SalaryEntry  SalaryEntry @relation(fields: [entryId], references: [id])
+}
+
+model SnapshotResult {
+  id           String      @id @default(cuid())
+  entryId      String      @unique
+  createdAt    DateTime    @default(now())
+
+  // 対象のエントリ（1:1）
+  SalaryEntry  SalaryEntry @relation(fields: [entryId], references: [id])
+
+  // スコア関連
+  score        Int         // 0〜100 の SALARY INDEX スコア
+  zScore       Float       // Z値
+  percentile   Float       // 0〜100
+  sampleSize   Int         // 母数（何件から算出したか）
+
+  // 当時の分布スナップショット
+  histogram    Json
+
+  // スコア算出ロジックの世代（v1, v2...）
+  scoreVersion Int         @default(1)
 }
