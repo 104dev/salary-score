@@ -55,7 +55,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta charSet="utf-8" />
         <meta
           name="viewport"
-          content="width=device-width, initial-scale=1"
+          content="width=device-width,initial-scale=1"
         />
         <Meta />
         <Links />
@@ -81,58 +81,78 @@ export function Layout({ children }: { children: React.ReactNode }) {
         />
         <div className="min-h-screen flex flex-col bg-base-200 text-base-content">
           {/* Header */}
-          <header className="navbar bg-base-100 shadow-sm">
-            <div className="container mx-auto px-4 flex justify-between items-center">
-                <Link to="/" className="flex items-center gap-2 no-underline">
-                <span className="text-2xl font-extrabold tracking-tight">
-                    SALARY<span className="text-primary">SCORE</span>
-                </span>
-                <span className="text-xs sm:text-sm text-base-content/60">
-                    あなたの年収ポジションを偏差値で見る
-                </span>
-                </Link>
-                <nav className="flex items-center gap-4 text-sm text-base-content/70">
-                    <a
-                    href="https://twitter.com/intent/tweet"
-                    className="link link-hover"
-                    target="_blank"
-                    rel="noreferrer"
-                    >
-                    X でシェア
-                    </a>
-                </nav>
-            </div>
-          </header>
+        <header className="navbar bg-base-100 shadow-sm">
+        <div className="container mx-auto px-4 flex justify-between items-center">
+
+            {/* ==== ロゴ + サブタイトル ==== */}
+            <Link to="/" className="flex flex-col sm:flex-row sm:items-center gap-0 sm:gap-2 no-underline">
+            {/* ロゴ */}
+            <span className="text-2xl font-extrabold tracking-tight leading-none">
+                SALARY<span className="text-primary">SCORE</span>
+            </span>
+
+            {/* サブタイトル（スマホではロゴの下に来る） */}
+            <span className="text-sm text-base-content/60 leading-tight mt-1 sm:mt-0">
+                あなたの年収ポジションを偏差値で見る
+            </span>
+            </Link>
+
+            {/* ==== 右側ナビ ==== */}
+            <nav className="flex items-center gap-4 text-sm text-base-content/70">
+                <a
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                    "年収偏差値チェッカー『SALARY SCORE』で市場ポジションを診断しよう📊"
+                )}&url=${encodeURIComponent("https://salary-score.com")}`}
+                className="link link-hover"
+                target="_blank"
+                rel="noreferrer"
+                >
+                X でシェア
+                </a>
+            </nav>
+
+        </div>
+        </header>
 
           {/* Main */}
-          <main className="flex-1">
+          {/* ★ スマホでの余白を付与（横: px-4, 縦: py-6） */}
+          <main className="flex-1 px-4 py-6 sm:px-0 sm:py-8">
             {children}
           </main>
 
           {/* Footer */}
-            <footer className="mt-12 border-t border-base-300 bg-base-100">
+          <footer className="mt-12 border-t border-base-300 bg-base-100">
             <div className="container mx-auto px-4 py-6 text-xs sm:text-sm text-base-content/60 flex flex-col sm:flex-row gap-3 justify-between">
-                <span>© {currentYear} SALARY SCORE</span>
+              <span>© {currentYear} SALARY SCORE</span>
 
-                <nav className="flex items-center gap-4">
-                <a href="/terms" className="link link-hover">利用規約</a>
-                <a href="/privacy-policy" className="link link-hover">プライバシー</a>
-                <a
-                    href="https://twitter.com/intent/tweet"
-                    className="link link-hover"
-                    target="_blank"
-                    rel="noreferrer"
-                >
-                    X でシェア
+              <nav className="flex items-center gap-4">
+                <a href="/terms" className="link link-hover">
+                  利用規約
                 </a>
-                </nav>
+                <a href="/privacy-policy" className="link link-hover">
+                  プライバシー
+                </a>
+                <a
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                    "年収偏差値チェッカー『SALARY SCORE』で市場ポジションを診断しよう📊"
+                )}&url=${encodeURIComponent("https://salary-score.com")}`}
+                className="link link-hover"
+                target="_blank"
+                rel="noreferrer"
+                >
+                X でシェア
+                </a>
+              </nav>
             </div>
 
             <div className="text-center pb-4 text-[11px] text-base-content/50">
-                本ツールは公開データに基づく<span className="font-semibold">統計的な参考値</span>を提供するものです。<br className="sm:hidden" />
-                内容の正確性や結果の保証を行うものではありません。
+              本ツールは公開データに基づく
+              <span className="font-semibold">統計的な参考値</span>
+              を提供するものです。
+              <br className="sm:hidden" />
+              内容の正確性や結果の保証を行うものではありません。
             </div>
-            </footer>
+          </footer>
         </div>
 
         <ScrollRestoration />
