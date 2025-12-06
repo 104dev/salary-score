@@ -93,7 +93,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </Link>
                 <nav className="flex items-center gap-4 text-sm text-base-content/70">
                     <a
-                    href="https://x.com"
+                    href="https://twitter.com/intent/tweet"
                     className="link link-hover"
                     target="_blank"
                     rel="noreferrer"
