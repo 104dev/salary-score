@@ -7,7 +7,7 @@ export default function PrivacyPolicyRoute() {
       </h1>
 
       <p className="text-sm text-base-content/70">
-        本プライバシーポリシーは、「年収偏差値チェッカー SALARY INDEX」（以下「本サービス」といいます。）において
+        本プライバシーポリシーは、「年収偏差値チェッカー SALARY SCORE」（以下「本サービス」といいます。）において
         取得する利用者情報の取り扱い方針を定めるものです。
       </p>
 

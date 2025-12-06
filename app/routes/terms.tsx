@@ -9,7 +9,7 @@ export default function TermsRoute() {
       </h1>
 
       <p className="text-sm text-base-content/70">
-        本利用規約（以下「本規約」といいます。）は、「年収偏差値チェッカー SALARY INDEX」
+        本利用規約（以下「本規約」といいます。）は、「年収偏差値チェッカー SALARY SCORE」
         （以下「本サービス」といいます。）の利用条件を定めるものです。
         利用者は、本サービスを利用した時点で、本規約に同意したものとみなされます。
       </p>

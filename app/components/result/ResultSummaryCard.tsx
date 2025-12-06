@@ -35,7 +35,7 @@ export function ResultSummaryCard({
         </div>
 
         <p className="mt-4 text-xs text-base-content/60">
-          スコアは SALARY INDEX 内のデータだけをもとにした簡易的な指標です。
+          スコアは SALARY SCORE 内のデータだけをもとにした簡易的な指標です。
           母数が少ない場合、数値は大きくぶれます。
         </p>
       </div>
