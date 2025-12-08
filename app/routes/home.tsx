@@ -358,6 +358,38 @@ export default function HomeRoute() {
           </button>
         </div>
       </Form>
+      {/* 対応職種一覧（SEO + ユーザー説明用） */}
+      <section className="mt-16 max-w-3xl mx-auto space-y-6">
+        <h2 className="text-lg font-bold">
+          対応している職種の例
+        </h2>
+        <p className="text-sm text-base-content/70">
+          年収偏差値チェッカーは、以下のような職種の年収ポジションを診断できます。
+        </p>
+
+        <div className="space-y-4">
+          {jobCategories.map((cat) => {
+            const subs = jobSubCategories[cat.code] ?? [];
+            return (
+              <div key={cat.code} className="border-t pt-3">
+                <h3 className="font-semibold text-sm">
+                  {cat.label} の年収偏差値・年収ポジション
+                </h3>
+                {subs.length > 0 && (
+                  <p className="mt-1 text-xs text-base-content/70">
+                    例：
+                    {subs
+                      .slice(0, 5) // 多すぎる場合は上位数件だけでもOK
+                      .map((s) => s.label)
+                      .join("、")}
+                    など
+                  </p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
     </>
   );
 }
