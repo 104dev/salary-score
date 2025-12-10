@@ -11,47 +11,64 @@ import { prisma } from "../db.server";
 
 // React Router の Action
 export async function action({ request }: { request: Request }) {
-  const formData = await request.formData();
+const formData = await request.formData();
 
-  // ニックネーム
-  const rawNickname = (formData.get("nickname") as string | null) ?? "";
-  let nickname: string | null = null;
-  if (rawNickname.trim() !== "") {
+// ニックネーム
+const rawNickname = (formData.get("nickname") as string | null) ?? "";
+let nickname: string | null = null;
+if (rawNickname.trim() !== "") {
     const trimmed = rawNickname.trim();
     nickname = trimmed.slice(0, 16); // 最大16文字
-  }
+}
 
-  const age = Number(formData.get("age"));
-  const jobCategoryCode = String(formData.get("jobCategoryCode") || "");
+const age = Number(formData.get("age"));
+if (!Number.isFinite(age) || age < 18 || age > 70) {
+  throw new Response("Invalid age", { status: 400 });
+}
 
-  // ▼ サブカテゴリ（プリセット or その他自由記述）
-  const rawJobSubCategory =
-    ((formData.get("jobSubCategory") as string | null) ?? "").trim();
-  const rawJobSubCategoryOther =
-    ((formData.get("jobSubCategoryOther") as string | null) ?? "").trim();
+const jobCategoryCode = String(formData.get("jobCategoryCode") || "");
 
-  let jobSubCategory: string | null = null;
+// -----------------------------
+// サブカテゴリ（カテゴリごとの制御）
+// -----------------------------
+const rawJobSubCategory =
+((formData.get("jobSubCategory") as string | null) ?? "").trim();
+const rawJobSubCategoryOther =
+((formData.get("jobSubCategoryOther") as string | null) ?? "").trim();
 
-  if (jobCategoryCode === "OTHER") {
-    // 親カテゴリが「その他」の場合は自由入力だけを見る
-    if (rawJobSubCategoryOther !== "") {
-      jobSubCategory = rawJobSubCategoryOther.slice(0, 50);
-    } else {
-      jobSubCategory = null;
+// この職種がサブカテゴリを持つか？
+const subList = jobSubCategories[jobCategoryCode] ?? [];
+const hasSub = Array.isArray(subList) && subList.length > 0;
+
+let jobSubCategory: string | null = null;
+
+if (hasSub) {
+    // -----------------------------
+    // サブカテゴリが存在する職種 → 必須
+    // -----------------------------
+    const validSubCodes = subList.map((s) => s.code);
+
+    // 未選択または不正値
+    if (!rawJobSubCategory || !validSubCodes.includes(rawJobSubCategory)) {
+        throw new Response("Invalid job sub category", { status: 400 });
     }
-  } else {
-    // 通常カテゴリ（営業 / IT / バックオフィス 等）
+
     if (rawJobSubCategory === "OTHER") {
-      // サブカテゴリ側にも OTHER がある設計を残しておく場合
-      if (rawJobSubCategoryOther !== "") {
+        // OTHER 選択時 → 自由入力必須
+        if (!rawJobSubCategoryOther) {
+        throw new Response("Sub category detail required", { status: 400 });
+        }
         jobSubCategory = rawJobSubCategoryOther.slice(0, 50);
-      } else {
-        jobSubCategory = null;
-      }
-    } else if (rawJobSubCategory !== "") {
-      jobSubCategory = rawJobSubCategory.slice(0, 50);
+    } else {
+        // プリセットをそのまま保存
+        jobSubCategory = rawJobSubCategory;
     }
-  }
+} else {
+    // -----------------------------
+    // サブカテゴリが存在しない職種 → 何も保存しない
+    // -----------------------------
+    jobSubCategory = null;
+}
 
   // ▼ 性別（任意・統計用）
   const rawGender = (formData.get("genderCode") as string | null) ?? "NO_ANSWER";
@@ -107,7 +124,7 @@ export async function action({ request }: { request: Request }) {
 
 export default function HomeRoute() {
   const [selectedJob, setSelectedJob] = useState<JobCategoryCode | null>(null);
-  const [age, setAge] = useState<number | "">("");
+  const [age, setAge] = useState(29); 
   const [salaryBandCode, setSalaryBandCode] = useState<number | "">("");
   const [jobSubCategory, setJobSubCategory] = useState<string>("");
   const [jobSubCategoryOther, setJobSubCategoryOther] = useState<string>("");
@@ -156,23 +173,30 @@ export default function HomeRoute() {
       {/* FORM */}
       <Form method="post" className="mx-auto max-w-xl space-y-8">
         {/* 年齢 */}
-        <div className="form-control">
-          <label className="label">
+        <div className="form-control w-full">
+        <label className="label">
             <span className="label-text font-medium">年齢</span>
-          </label>
-          <input
-            type="number"
+        </label>
+
+        {/* 現在値 */}
+        <div className="text-center mb-2">{age} 歳</div>
+
+        {/* スライダー本体（w-full が超重要） */}
+        <input
+            type="range"
             name="age"
-            placeholder="例：29"
             min={18}
             max={70}
             value={age}
-            onChange={(e) =>
-              setAge(e.target.value === "" ? "" : Number(e.target.value))
-            }
-            className="input input-bordered w-full"
-            required
-          />
+            onChange={(e) => setAge(Number(e.target.value))}
+            className="range range-primary w-full"
+        />
+
+        {/* 目盛ラベルも同じ幅にそろえる */}
+        <div className="flex justify-between text-xs text-gray-500 mt-1">
+            <span>18</span>
+            <span>70</span>
+        </div>
         </div>
 
         {/* 性別（任意・統計用） */}
