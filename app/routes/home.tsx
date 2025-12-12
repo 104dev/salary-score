@@ -131,7 +131,7 @@ if (hasSub) {
 
 export default function HomeRoute() {
   const [selectedJob, setSelectedJob] = useState<JobCategoryCode | null>(null);
-  const [age, setAge] = useState(29); 
+  const [age, setAge] = useState<number | "">("");
   const [salaryBandCode, setSalaryBandCode] = useState<number | "">("");
   const [jobSubCategory, setJobSubCategory] = useState<string>("");
   const [jobSubCategoryOther, setJobSubCategoryOther] = useState<string>("");
@@ -185,21 +185,25 @@ export default function HomeRoute() {
             <span className="label-text font-medium">年齢</span>
         </label>
 
-        {/* 現在値 */}
-        <div className="text-center mb-2">{age} 歳</div>
+        {/* 表示部分（未選択のときはプレースホルダ） */}
+        <div className="text-center mb-2">
+            {age === "" ? "年齢を選択してください" : `${age} 歳`}
+        </div>
 
-        {/* スライダー本体（w-full が超重要） */}
+        {/* スライダー本体（name は付けない） */}
         <input
             type="range"
-            name="age"
             min={18}
             max={70}
-            value={age}
+            // 見た目用の値。未選択時は真ん中とかにしておく
+            value={age === "" ? 29 : age}
             onChange={(e) => setAge(Number(e.target.value))}
             className="range range-primary w-full"
         />
 
-        {/* 目盛ラベルも同じ幅にそろえる */}
+        {/* 実際に送信する値はこちら */}
+        <input type="hidden" name="age" value={age} />
+
         <div className="flex justify-between text-xs text-gray-500 mt-1">
             <span>18</span>
             <span>70</span>
