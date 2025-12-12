@@ -1,4 +1,3 @@
-// app/root.tsx
 import {
   isRouteErrorResponse,
   Link,
@@ -99,6 +98,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
             {/* ==== 右側ナビ ==== */}
             <nav className="flex items-center gap-4 text-sm text-base-content/70">
+                <Link to="/articles" className="link link-hover">
+                  記事一覧
+                </Link>
                 <a
                 href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
                     "年収偏差値チェッカー『SALARY SCORE』で市場ポジションを診断しよう📊"
@@ -126,6 +128,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <span>© {currentYear} SALARY SCORE</span>
 
               <nav className="flex items-center gap-4">
+                <Link to="/articles" className="link link-hover">
+                  記事一覧
+                </Link>
                 <a href="/terms" className="link link-hover">
                   利用規約
                 </a>
