@@ -16,4 +16,6 @@ export default [
   route("articles/salary-score-80", "routes/articles/salary-score-80.tsx"),
   route("articles/salary-score-university", "routes/articles/salary-score-university.tsx"),
   route("articles/salary-score-women", "routes/articles/salary-score-women.tsx"),
+  route("articles/salary-score-tokyo", "routes/articles/salary-score-tokyo.tsx"),
+  route("articles/salary-checker-boyfriend", "routes/articles/salary-checker-boyfriend.tsx"),
 ] satisfies RouteConfig;

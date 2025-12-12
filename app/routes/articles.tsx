@@ -20,148 +20,185 @@ export default function ArticlesRoute() {
         <h2 className="text-lg sm:text-xl font-semibold">公開中の記事</h2>
 
         <div className="space-y-6">
-          {/* 1. 年収偏差値60 */}
-          <article className="border rounded-xl p-4 sm:p-5 bg-base-100 shadow-sm hover:shadow-md transition-shadow">
-            <h3 className="text-base sm:text-lg font-semibold">
-              <a href="/articles/salary-score-60" className="link link-hover link-primary">
-                年収偏差値60とは？上位何％・具体的な年収・生活レベルまで解説
-              </a>
-            </h3>
-            <p className="mt-2 text-xs sm:text-sm text-base-content/70 leading-relaxed">
-              年収偏差値60がどの位置に相当するのか、年代別・職種別の年収イメージ、
-              生活レベルの目安、よくある誤解などをまとめた解説記事。
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2 text-[11px] sm:text-xs text-base-content/60">
-              <span className="badge badge-outline badge-sm">年収偏差値</span>
-              <span className="badge badge-outline badge-sm">年収の目安</span>
-              <span className="badge badge-outline badge-sm">生活レベル</span>
-            </div>
-          </article>
+        {/* 1. 年収偏差値60 */}
+        <article className="border rounded-xl p-4 sm:p-5 bg-base-100 shadow-sm hover:shadow-md transition-shadow">
+        <h3 className="text-base sm:text-lg font-semibold">
+            <a href="/articles/salary-score-60" className="link link-hover link-primary">
+            年収偏差値60とは？上位何％・具体的な年収・生活レベルまで解説
+            </a>
+        </h3>
+        <p className="mt-2 text-xs sm:text-sm text-base-content/70 leading-relaxed">
+            年収偏差値60がどの位置に相当するのか、年代別・職種別の年収イメージ、
+            生活レベルの目安、よくある誤解などをまとめた解説記事。
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2 text-[11px] sm:text-xs text-base-content/60">
+            <span className="badge badge-outline badge-sm">年収偏差値</span>
+            <span className="badge badge-outline badge-sm">年収の目安</span>
+            <span className="badge badge-outline badge-sm">生活レベル</span>
+        </div>
+        </article>
 
-          {/* 2. 年収偏差値チェッカーはおかしい？ */}
-          <article className="border rounded-xl p-4 sm:p-5 bg-base-100 shadow-sm hover:shadow-md transition-shadow">
-            <h3 className="text-base sm:text-lg font-semibold">
-              <a
-                href="/articles/salary-score-checker-faq"
-                className="link link-hover link-primary"
-              >
-                年収偏差値チェッカーはおかしい？結果がズレて感じる理由と仕組みの説明
-              </a>
-            </h3>
-            <p className="mt-2 text-xs sm:text-sm text-base-content/70 leading-relaxed">
-              「高すぎる／低すぎる」と感じる理由の大半は、体感と統計のズレ。
-              年収偏差値の仕組み・よくある誤解・注意点を整理したFAQ形式の解説記事。
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2 text-[11px] sm:text-xs text-base-content/60">
-              <span className="badge badge-outline badge-sm">仕組み</span>
-              <span className="badge badge-outline badge-sm">FAQ</span>
-              <span className="badge badge-outline badge-sm">よくある疑問</span>
-            </div>
-          </article>
+        {/* 2. 年収偏差値チェッカーはおかしい？ */}
+        <article className="border rounded-xl p-4 sm:p-5 bg-base-100 shadow-sm hover:shadow-md transition-shadow">
+        <h3 className="text-base sm:text-lg font-semibold">
+            <a
+            href="/articles/salary-score-checker-faq"
+            className="link link-hover link-primary"
+            >
+            年収偏差値チェッカーはおかしい？結果がズレて感じる理由と仕組みの説明
+            </a>
+        </h3>
+        <p className="mt-2 text-xs sm:text-sm text-base-content/70 leading-relaxed">
+            「高すぎる／低すぎる」と感じる理由の大半は、体感と統計のズレ。
+            年収偏差値の仕組み・よくある誤解・注意点を整理したFAQ形式の解説記事。
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2 text-[11px] sm:text-xs text-base-content/60">
+            <span className="badge badge-outline badge-sm">仕組み</span>
+            <span className="badge badge-outline badge-sm">FAQ</span>
+            <span className="badge badge-outline badge-sm">よくある疑問</span>
+        </div>
+        </article>
 
-          {/* 3. 年収偏差値と中央値 */}
-          <article className="border rounded-xl p-4 sm:p-5 bg-base-100 shadow-sm hover:shadow-md transition-shadow">
-            <h3 className="text-base sm:text-lg font-semibold">
-              <a href="/articles/salary-score-median" className="link link-hover link-primary">
-                年収偏差値と中央値・平均値の違いをわかりやすく解説
-              </a>
-            </h3>
-            <p className="mt-2 text-xs sm:text-sm text-base-content/70 leading-relaxed">
-              平均年収・中央値・偏差値の違いを整理し、年収を見るときにどの指標をどう使うべきかをわかりやすく説明。
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2 text-[11px] sm:text-xs text-base-content/60">
-              <span className="badge badge-outline badge-sm">中央値</span>
-              <span className="badge badge-outline badge-sm">平均年収</span>
-              <span className="badge badge-outline badge-sm">統計の基礎</span>
-            </div>
-          </article>
+        {/* 3. 年収偏差値と中央値 */}
+        <article className="border rounded-xl p-4 sm:p-5 bg-base-100 shadow-sm hover:shadow-md transition-shadow">
+        <h3 className="text-base sm:text-lg font-semibold">
+            <a href="/articles/salary-score-median" className="link link-hover link-primary">
+            年収偏差値と中央値・平均値の違いをわかりやすく解説
+            </a>
+        </h3>
+        <p className="mt-2 text-xs sm:text-sm text-base-content/70 leading-relaxed">
+            平均年収・中央値・偏差値の違いを整理し、年収を見るときにどの指標をどう使うべきかをわかりやすく説明。
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2 text-[11px] sm:text-xs text-base-content/60">
+            <span className="badge badge-outline badge-sm">中央値</span>
+            <span className="badge badge-outline badge-sm">平均年収</span>
+            <span className="badge badge-outline badge-sm">統計の基礎</span>
+        </div>
+        </article>
 
-          {/* 4. 都道府県別の年収偏差値 */}
-          <article className="border rounded-xl p-4 sm:p-5 bg-base-100 shadow-sm hover:shadow-md transition-shadow">
-            <h3 className="text-base sm:text-lg font-semibold">
-              <a href="/articles/salary-score-prefecture" className="link link-hover link-primary">
-                都道府県別の年収偏差値：地域差はどこまで重要か？
-              </a>
-            </h3>
-            <p className="mt-2 text-xs sm:text-sm text-base-content/70 leading-relaxed">
-              都道府県ごとの平均年収の違いと、年収偏差値を見るときに地域差をどう扱うべきかを整理した記事。
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2 text-[11px] sm:text-xs text-base-content/60">
-              <span className="badge badge-outline badge-sm">地域差</span>
-              <span className="badge badge-outline badge-sm">都道府県</span>
-              <span className="badge badge-outline badge-sm">年収分布</span>
-            </div>
-          </article>
+        {/* 4. 都道府県別の年収偏差値 */}
+        <article className="border rounded-xl p-4 sm:p-5 bg-base-100 shadow-sm hover:shadow-md transition-shadow">
+        <h3 className="text-base sm:text-lg font-semibold">
+            <a href="/articles/salary-score-prefecture" className="link link-hover link-primary">
+            都道府県別の年収偏差値：地域差はどこまで重要か？
+            </a>
+        </h3>
+        <p className="mt-2 text-xs sm:text-sm text-base-content/70 leading-relaxed">
+            都道府県ごとの平均年収の違いと、年収偏差値を見るときに地域差をどう扱うべきかを整理した記事。
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2 text-[11px] sm:text-xs text-base-content/60">
+            <span className="badge badge-outline badge-sm">地域差</span>
+            <span className="badge badge-outline badge-sm">都道府県</span>
+            <span className="badge badge-outline badge-sm">年収分布</span>
+        </div>
+        </article>
 
-          {/* 5. 年収偏差値ランキング */}
-          <article className="border rounded-xl p-4 sm:p-5 bg-base-100 shadow-sm hover:shadow-md transition-shadow">
-            <h3 className="text-base sm:text-lg font-semibold">
-              <a href="/articles/salary-score-ranking" className="link link-hover link-primary">
-                年収偏差値ランキング：年代×職種で見る年収ポジション
-              </a>
-            </h3>
-            <p className="mt-2 text-xs sm:text-sm text-base-content/70 leading-relaxed">
-              偏差値と順位の関係、年代×職種ごとにランキングを見るべき理由など、
-              年収ランキングの「正しい読み方」を整理した記事。
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2 text-[11px] sm:text-xs text-base-content/60">
-              <span className="badge badge-outline badge-sm">ランキング</span>
-              <span className="badge badge-outline badge-sm">偏差値</span>
-              <span className="badge badge-outline badge-sm">統計の見方</span>
-            </div>
-          </article>
+        {/* 5. 年収偏差値ランキング */}
+        <article className="border rounded-xl p-4 sm:p-5 bg-base-100 shadow-sm hover:shadow-md transition-shadow">
+        <h3 className="text-base sm:text-lg font-semibold">
+            <a href="/articles/salary-score-ranking" className="link link-hover link-primary">
+            年収偏差値ランキング：年代×職種で見る年収ポジション
+            </a>
+        </h3>
+        <p className="mt-2 text-xs sm:text-sm text-base-content/70 leading-relaxed">
+            偏差値と順位の関係、年代×職種ごとにランキングを見るべき理由など、
+            年収ランキングの「正しい読み方」を整理した記事。
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2 text-[11px] sm:text-xs text-base-content/60">
+            <span className="badge badge-outline badge-sm">ランキング</span>
+            <span className="badge badge-outline badge-sm">偏差値</span>
+            <span className="badge badge-outline badge-sm">統計の見方</span>
+        </div>
+        </article>
 
-          {/* 6. 年収偏差値80 */}
-          <article className="border rounded-xl p-4 sm:p-5 bg-base-100 shadow-sm hover:shadow-md transition-shadow">
-            <h3 className="text-base sm:text-lg font-semibold">
-              <a href="/articles/salary-score-80" className="link link-hover link-primary">
-                年収偏差値80とは？上位2〜3％の世界とキャリアパターン
-              </a>
-            </h3>
-            <p className="mt-2 text-xs sm:text-sm text-base-content/70 leading-relaxed">
-              年収偏差値80が意味する上位数％の世界、具体的な年収イメージ、到達しやすい職種やキャリアを整理した記事。
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2 text-[11px] sm:text-xs text-base-content/60">
-              <span className="badge badge-outline badge-sm">高年収</span>
-              <span className="badge badge-outline badge-sm">偏差値80</span>
-              <span className="badge badge-outline badge-sm">キャリア</span>
-            </div>
-          </article>
+        {/* 6. 年収偏差値80 */}
+        <article className="border rounded-xl p-4 sm:p-5 bg-base-100 shadow-sm hover:shadow-md transition-shadow">
+        <h3 className="text-base sm:text-lg font-semibold">
+            <a href="/articles/salary-score-80" className="link link-hover link-primary">
+            年収偏差値80とは？上位2〜3％の世界とキャリアパターン
+            </a>
+        </h3>
+        <p className="mt-2 text-xs sm:text-sm text-base-content/70 leading-relaxed">
+            年収偏差値80が意味する上位数％の世界、具体的な年収イメージ、到達しやすい職種やキャリアを整理した記事。
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2 text-[11px] sm:text-xs text-base-content/60">
+            <span className="badge badge-outline badge-sm">高年収</span>
+            <span className="badge badge-outline badge-sm">偏差値80</span>
+            <span className="badge badge-outline badge-sm">キャリア</span>
+        </div>
+        </article>
 
-          {/* 7. 大学別の年収偏差値 */}
-          <article className="border rounded-xl p-4 sm:p-5 bg-base-100 shadow-sm hover:shadow-md transition-shadow">
-            <h3 className="text-base sm:text-lg font-semibold">
-              <a href="/articles/salary-score-university" className="link link-hover link-primary">
-                大学別の年収偏差値は？学歴と年収の関係を整理する
-              </a>
-            </h3>
-            <p className="mt-2 text-xs sm:text-sm text-base-content/70 leading-relaxed">
-              大学別年収ランキングの見方、学歴と年収の関係、偏差値の扱い方をまとめた記事。
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2 text-[11px] sm:text-xs text-base-content/60">
-              <span className="badge badge-outline badge-sm">大学別</span>
-              <span className="badge badge-outline badge-sm">学歴</span>
-              <span className="badge badge-outline badge-sm">年収傾向</span>
-            </div>
-          </article>
+        {/* 7. 大学別の年収偏差値 */}
+        <article className="border rounded-xl p-4 sm:p-5 bg-base-100 shadow-sm hover:shadow-md transition-shadow">
+        <h3 className="text-base sm:text-lg font-semibold">
+            <a href="/articles/salary-score-university" className="link link-hover link-primary">
+            大学別の年収偏差値は？学歴と年収の関係を整理する
+            </a>
+        </h3>
+        <p className="mt-2 text-xs sm:text-sm text-base-content/70 leading-relaxed">
+            大学別年収ランキングの見方、学歴と年収の関係、偏差値の扱い方をまとめた記事。
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2 text-[11px] sm:text-xs text-base-content/60">
+            <span className="badge badge-outline badge-sm">大学別</span>
+            <span className="badge badge-outline badge-sm">学歴</span>
+            <span className="badge badge-outline badge-sm">年収傾向</span>
+        </div>
+        </article>
 
-          {/* 8. 女性の年収偏差値 */}
-          <article className="border rounded-xl p-4 sm:p-5 bg-base-100 shadow-sm hover:shadow-md transition-shadow">
-            <h3 className="text-base sm:text-lg font-semibold">
-              <a href="/articles/salary-score-women" className="link link-hover link-primary">
-                女性の年収偏差値はどう見ればいい？男女差が生まれる理由と注意点
-              </a>
-            </h3>
-            <p className="mt-2 text-xs sm:text-sm text-base-content/70 leading-relaxed">
-              年収分布の男女差の理由、同条件で比較する重要性など、
-              女性が年収偏差値を見てキャリアを考える際のポイントをまとめた記事。
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2 text-[11px] sm:text-xs text-base-content/60">
-              <span className="badge badge-outline badge-sm">女性</span>
-              <span className="badge badge-outline badge-sm">男女差</span>
-              <span className="badge badge-outline badge-sm">キャリア</span>
-            </div>
-          </article>
+        {/* 8. 女性の年収偏差値 */}
+        <article className="border rounded-xl p-4 sm:p-5 bg-base-100 shadow-sm hover:shadow-md transition-shadow">
+        <h3 className="text-base sm:text-lg font-semibold">
+            <a href="/articles/salary-score-women" className="link link-hover link-primary">
+            女性の年収偏差値はどう見ればいい？男女差が生まれる理由と注意点
+            </a>
+        </h3>
+        <p className="mt-2 text-xs sm:text-sm text-base-content/70 leading-relaxed">
+            年収分布の男女差の理由、同条件で比較する重要性など、
+            女性が年収偏差値を見てキャリアを考える際のポイントをまとめた記事。
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2 text-[11px] sm:text-xs text-base-content/60">
+            <span className="badge badge-outline badge-sm">女性</span>
+            <span className="badge badge-outline badge-sm">男女差</span>
+            <span className="badge badge-outline badge-sm">キャリア</span>
+        </div>
+        </article>
+
+        {/* 9. 東京の年収偏差値 */}
+        <article className="border rounded-xl p-4 sm:p-5 bg-base-100 shadow-sm hover:shadow-md transition-shadow">
+        <h3 className="text-base sm:text-lg font-semibold">
+            <a href="/articles/salary-score-tokyo" className="link link-hover link-primary">
+            東京の年収はどれくらい高い？東京都民の年収偏差値・平均年収を詳しく解説
+            </a>
+        </h3>
+        <p className="mt-2 text-xs sm:text-sm text-base-content/70 leading-relaxed">
+            東京は全国と比べて年収水準が大きく異なる地域。
+            平均年収・年代別の目安・偏差値の見え方の違いを整理した記事。
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2 text-[11px] sm:text-xs text-base-content/60">
+            <span className="badge badge-outline badge-sm">東京</span>
+            <span className="badge badge-outline badge-sm">地域差</span>
+            <span className="badge badge-outline badge-sm">年収傾向</span>
+        </div>
+        </article>
+
+        {/* 10. 彼氏の年収を知りたい人向けの記事 */}
+        <article className="border rounded-xl p-4 sm:p-5 bg-base-100 shadow-sm hover:shadow-md transition-shadow">
+        <h3 className="text-base sm:text-lg font-semibold">
+            <a href="/articles/salary-checker-boyfriend" className="link link-hover link-primary">
+            彼氏の年収はどれくらいが普通？平均・推測方法・チェックポイントを解説
+            </a>
+        </h3>
+        <p className="mt-2 text-xs sm:text-sm text-base-content/70 leading-relaxed">
+            「彼氏の年収はどれくらいが普通？」と気になる人向けに、
+            年代別平均・推測のポイント・結婚を考える際の注意点などをまとめた記事。
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2 text-[11px] sm:text-xs text-base-content/60">
+            <span className="badge badge-outline badge-sm">恋愛</span>
+            <span className="badge badge-outline badge-sm">年収の目安</span>
+            <span className="badge badge-outline badge-sm">ライフプラン</span>
+        </div>
+        </article>
+
         </div>
       </section>
 
