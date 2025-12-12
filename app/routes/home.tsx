@@ -7,6 +7,7 @@ import {
 } from "../jobCategories";
 import { salaryBandsV1 } from "../salaryBands";
 import { genderOptions } from "../gender";
+import { regionOptions } from "../regionOptions";
 import { prisma } from "../db.server";
 
 // React Router の Action
@@ -24,6 +25,11 @@ if (rawNickname.trim() !== "") {
 const age = Number(formData.get("age"));
 if (!Number.isFinite(age) || age < 18 || age > 70) {
   throw new Response("Invalid age", { status: 400 });
+}
+
+const workRegionCode = formData.get("workRegionCode");
+if (!workRegionCode || typeof workRegionCode !== "string" || workRegionCode.trim() === "") {
+  throw new Response("Invalid region", { status: 400 });
 }
 
 const jobCategoryCode = String(formData.get("jobCategoryCode") || "");
@@ -105,6 +111,7 @@ if (hasSub) {
       annualIncome,
       clientId,
       genderCode,
+      workRegionCode
       // industryCode は今は null, surveyVersion は default(1)
     },
   });
@@ -199,12 +206,35 @@ export default function HomeRoute() {
         </div>
         </div>
 
+        {/* 勤務地エリア */}
+        <div className="form-control w-full">
+        <label className="label">
+            <span className="label-text font-semibold">勤務地エリア</span>
+        </label>
+        <select
+            name="workRegionCode"
+            required
+            defaultValue=""
+            className="select select-bordered w-full"
+        >
+            <option value="" disabled>
+            選択してください
+            </option>
+
+            {regionOptions.map((opt) => (
+            <option key={opt.code} value={opt.code}>
+                {opt.label}
+            </option>
+            ))}
+        </select>
+        </div>
+
         {/* 性別（任意・統計用） */}
         <div className="form-control">
             <label className="label flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
             <span className="label-text font-medium">性別（任意）</span>
             <span className="label-text-alt text-xs text-base-content/60">
-                偏差値の計算には利用せず、統計的な分析のみに使用します。
+                スコアの計算には利用しません。
             </span>
             </label>
             <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2">

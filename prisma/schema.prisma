@@ -16,6 +16,10 @@ model SalaryEntry {
 
   age              Int
 
+  // 勤務地エリアバケット（将来変更を許容するためStringで保持）
+  // 例: "TOKYO" | "URBAN_HIGH" | "OTHER"
+  workRegionCode   String?
+
   // 大分類（営業/ITエンジニア/…）
   jobCategoryCode  String
 
