@@ -37,6 +37,9 @@ model SalaryEntry {
 
   genderCode       String? 
 
+  ipHash           String?    // 生IPは保存せず、不可逆ハッシュだけ持つ
+  countryCode      String?    // "JP" / "US" / など2桁コード
+
   // 質問フォームの世代（v1,v2…）
   surveyVersion    Int      @default(1)
 

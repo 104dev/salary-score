@@ -9,6 +9,7 @@ import { salaryBandsV1 } from "../salaryBands";
 import { genderOptions } from "../gender";
 import { regionOptions } from "../regionOptions";
 import { prisma } from "../db.server";
+import { hashIp } from "../utils/ipHash.server";
 
 // React Router の Action
 export async function action({ request }: { request: Request }) {
@@ -101,18 +102,32 @@ if (hasSub) {
 
   const clientId = clientIdFromCookie ?? crypto.randomUUID();
 
+  // ① IP 推定
+  const rawIp =
+    request.headers.get("x-forwarded-for") ??
+    request.headers.get("x-real-ip") ??
+    null;
+
+  const ipHash = rawIp ? hashIp(rawIp) : null;
+
+  // ② 国コード（Cloudflare いるならこれが一番楽）
+  const countryCode = request.headers.get("CF-IPCountry") ?? null;
+
   // DB保存
   const entry = await prisma.salaryEntry.create({
     data: {
-      nickname,
-      age,
-      jobCategoryCode,
-      jobSubCategory,
-      annualIncome,
-      clientId,
-      genderCode,
-      workRegionCode
-      // industryCode は今は null, surveyVersion は default(1)
+        nickname,
+        age,
+        jobCategoryCode,
+        jobSubCategory,
+        annualIncome,
+        clientId,
+        genderCode,
+        workRegionCode,
+        ipHash,
+        countryCode,
+        // industryCode は今は null, surveyVersion は default(1)
+
     },
   });
 
